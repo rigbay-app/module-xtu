@@ -20,7 +20,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Rigbay.Module.Xtu\Rigbay.Module.Xtu.csproj" />
-    <ProjectReference Include="..\..\..\src\Rigbay.Abstractions\Rigbay.Abstractions.csproj" />
+    <ProjectReference Include="..\external\rigbay\src\Rigbay.Abstractions\Rigbay.Abstractions.csproj" />
   </ItemGroup>
 
   <ItemGroup>

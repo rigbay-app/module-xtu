@@ -1,0 +1,3 @@
+[submodule "external/rigbay"]
+	path = external/rigbay
+	url = https://github.com/rigbay-app/rigbay.git

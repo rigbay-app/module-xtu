@@ -22,8 +22,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- In its own repository, replace this ProjectReference by the Rigbay.Abstractions NuGet package (same in the tests project and the .slnx). -->
-    <ProjectReference Include="..\..\..\src\Rigbay.Abstractions\Rigbay.Abstractions.csproj">
+    <!--
+    Standalone module repository. The host contract is the git submodule external/rigbay (pinned to a commit of
+    https://github.com/rigbay-app/rigbay); nothing is published as a package. Clone with the recurse-submodules option.
+    Rigbay.Abstractions.dll must NOT end up in the output folder: the host supplies its own copy.
+  -->
+    <ProjectReference Include="..\external\rigbay\src\Rigbay.Abstractions\Rigbay.Abstractions.csproj">
       <Private>false</Private>
       <ExcludeAssets>runtime</ExcludeAssets>
     </ProjectReference>
