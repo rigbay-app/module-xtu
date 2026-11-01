@@ -1,21 +1,22 @@
-# The XTU profiles module (`modules/xtu`, task C2)
+# The XTU profiles module
+
+> These notes were written in the [Rigbay repository](https://github.com/rigbay-app/rigbay) while the module lived in its `modules/xtu/` folder, and were copied here unchanged apart from paths: `modules/xtu/...` is now the root of this repository, `docs/xtu/...` is this `docs/` folder. Sections keep the date they were written; the README at the root says what is current. Host-only things they mention (`Rigbay.sln`, `docs/spike/`, `docs/UI-DIRECTION.md`, `src/Rigbay.LangCheck`, the agent skill) stay in the Rigbay repository.
 
 Rigbay module `xtu`, group `power`: switch Intel XTU power-limit profiles (PL1, PL2, time window), switch them by power source, give
 them hotkeys and tray items, and publish CPU readings on the metrics bus. It is the in-process .NET 10 design (design A) that spike C1
-proved (`docs/spike/XTU-RUNTIME.md`). It ports the standalone app `xtu-profile-switcher`, which stays a working app and was not modified.
+proved (`docs/spike/XTU-RUNTIME.md` of the Rigbay repository). It ports the standalone app `xtu-profile-switcher`, which stays a working app and was not modified.
 
-The folder is self-contained so it can move to its own repository (`module-xtu`): one project reference, `src/Rigbay.Abstractions`.
+This repository is that module, extracted with its history from the Rigbay repository: the one project reference is `Rigbay.Abstractions`, taken from the git submodule `external/rigbay`.
 
 | Path | What |
 | --- | --- |
-| `modules/xtu/Rigbay.Module.Xtu/` | the module (`net10.0`, x64): code, `module.json`, `lang/en.lang`, `lang/vi.lang` |
-| `modules/xtu/Rigbay.Module.Xtu.Tests/` | 190 unit tests, no hardware and no XTU (170 with fakes, 20 wire-compatibility tests against `wire/`) |
-| `modules/xtu/Rigbay.Module.Xtu.Tests/wire/` | the recording of the real service's wire format (read-only, made once) the contract copies are checked against |
-| `modules/xtu/tools/live-read.ps1` | the read-only live check below, as a script |
-| `modules/xtu/tools/dump-contracts.ps1`, `record-wire.ps1` | print the contract metadata of the installed XTU; record the wire sample (needs XTU, run once, read-only) |
-| `docs/xtu/RECORDER-NOTES.md` | XTU columns and meta of the old recorder, for the future recorder module |
-| `docs/xtu/shots/` | the PNGs and text files of the live check |
-| `.claude/skills/xtu-module/` | the module's own knowledge for the next agent (style of the old `xtu-switcher` skill) |
+| `Rigbay.Module.Xtu/` | the module (`net10.0`, x64): code, `module.json`, `lang/en.lang`, `lang/vi.lang` |
+| `Rigbay.Module.Xtu.Tests/` | 190 unit tests, no hardware and no XTU (170 with fakes, 20 wire-compatibility tests against `wire/`) |
+| `Rigbay.Module.Xtu.Tests/wire/` | the recording of the real service's wire format (read-only, made once) the contract copies are checked against |
+| `tools/live-read.ps1` | the read-only live check below, as a script |
+| `tools/dump-contracts.ps1`, `record-wire.ps1` | print the contract metadata of the installed XTU; record the wire sample (needs XTU, run once, read-only) |
+| `docs/RECORDER-NOTES.md` | XTU columns and meta of the old recorder, for the future recorder module |
+| `docs/shots/` | the PNGs and text files of the live check |
 
 ## Safety boundary (the part that must not move)
 
@@ -56,7 +57,7 @@ write-path call discards the pending proposals.
 
 ## The page
 
-Operate-mode page of standard host rows (see `docs/UI-DIRECTION.md`); nothing custom. In order:
+Operate-mode page of standard host rows (see `docs/UI-DIRECTION.md` in the Rigbay repository); nothing custom. In order:
 
 1. **Power limits now**: error row when XTU cannot be read, warning row when Windows Fast Startup is on, the active profile (same match
    rule as the old app: first profile whose four values equal the hardware's within 0.01), the limits in force, the **Profile** choice
@@ -123,10 +124,8 @@ put the limits back). A chosen profile that no longer exists is reported, not ap
 ## Build and test
 
 ```
-dotnet build modules/xtu/Rigbay.Xtu.slnx -c Release          # builds anywhere (no XTU, no Intel file); 0 warnings
-dotnet test  modules/xtu/Rigbay.Xtu.slnx -c Release
-dotnet build Rigbay.sln -c Release                            # the module is part of the main solution too
-dotnet run --project src/Rigbay.LangCheck -- modules/xtu/Rigbay.Module.Xtu/lang --module xtu --source modules/xtu/Rigbay.Module.Xtu --strict
+dotnet build Rigbay.Xtu.slnx -c Release          # builds anywhere (no XTU, no Intel file); 0 warnings
+dotnet test  Rigbay.Xtu.slnx -c Release
 ```
 
 Since C-lite (task C4) the module builds and its tests run on a machine that has no Intel XTU, for example a hosted `windows-latest` runner: the
@@ -138,8 +137,8 @@ WCF client packages (`System.ServiceModel.*`, about 2.7 MB); no Intel file.
 
 Intel's contract types have no `[DataContract]`, so the wire format comes from CLR namespaces, type names, member names (alphabetical) and the
 interface and method names (SOAP actions). A wrong copy would not show in the fake-based tests, only against the real service. So the real
-service was recorded once, read-only, by `modules/xtu/tools/record-wire.ps1` (elevated, Windows PowerShell 5.1, XTU installed; no write-path call is
-made anywhere in it) into three files under `modules/xtu/Rigbay.Module.Xtu.Tests/wire/`:
+service was recorded once, read-only, by `tools/record-wire.ps1` (elevated, Windows PowerShell 5.1, XTU installed; no write-path call is
+made anywhere in it) into three files under `Rigbay.Module.Xtu.Tests/wire/`:
 
 | File | Content | How it was made |
 | --- | --- | --- |
@@ -178,7 +177,7 @@ elevated, look at the files, copy them over `wire/`, and run the tests.
 
 The Intel references, `XtuDir` and `probePaths` were removed; the module now uses its own contract copies.
 
-- `dotnet build modules/xtu/Rigbay.Xtu.slnx -c Release` and `dotnet build Rigbay.sln -c Release`: 0 warnings, 0 errors. `dotnet test` of the module:
+- `dotnet build Rigbay.Xtu.slnx -c Release` and the Rigbay repository's `Rigbay.sln`: 0 warnings, 0 errors. `dotnet test` of the module:
   **190 passed** (the 161 of before, minus 1 test of the removed "DLLs missing" probe outcome, plus 4 for the new pipe outcomes of the probe, plus 6 for the service version, plus the 20
   wire tests).
 - Read-only live check through the real host loader (`tools/live-read.ps1`, latch ON, the module laid out with no Intel file, no `probePaths`):
@@ -188,7 +187,7 @@ The Intel references, `XtuDir` and `probePaths` were removed; the module now use
   (temperature, package power, usage, clock, PL1, PL2: `shots/clite-page-dark.png`), so the monitoring pipe (`Connect`, `Start`, `GetValues`) works with the
   copies too. The log says `writes are switched OFF (no-write.flag)`; no apply line.
 - The wire recording (`wire/`, see above) was made during the same session.
-- Build without Intel files: the csproj has no reference or path to the Intel folder; see `docs/xtu/CLITE-PLAN.md` ("Result") for the clean-clone
+- Build without Intel files: the csproj has no reference or path to the Intel folder; see `docs/CLITE-PLAN.md` ("Result") for the clean-clone
   build and the `git grep` check.
 - Probe: the service and **both pipes**. `PipeCheck` opens a channel to each endpoint and closes it at once (no operation is called). Only "endpoint not found"
   that is not an access refusal counts as missing; from a process that is not elevated the answer is "unknown" and does not block the machine (a
@@ -243,7 +242,7 @@ and `.NetNamedPipe` 10.0.652802) pull `System.Security.Cryptography.Pkcs` and `.
 for Pkcs; GHSA-23rf-6693-g89p, -37gx-xxp4-5rgx, -6588-8gv4-xfgh, -7hqp-7c5m-4vq6, -8q5v-6pqq-x66h, -c399-9853-6jmj, -cvvh-rhrc-wg4q, -g8r8-53c2-pm3f, -mmjf-rqrv-855v,
 -r955-8q5j-3h83, -w3x6-4m5h-cxqf for Xml; the highest fixed version among them is 10.0.13). Both are now pinned with explicit `PackageReference`s to **10.0.14**
 (latest 10.x on nuget.org that day) in `Rigbay.Module.Xtu.csproj`, still with `ExcludeAssets="runtime"`: the named-pipe client never uses message signing, and
-neither DLL is in the build output. Result: `dotnet build modules/xtu/Rigbay.Xtu.slnx` 0 warnings, 0 errors; `dotnet list package --vulnerable --include-transitive`
+neither DLL is in the build output. Result: `dotnet build Rigbay.Xtu.slnx` 0 warnings, 0 errors; `dotnet list package --vulnerable --include-transitive`
 reports nothing for all three projects; 148 tests passed at that time. No vulnerable assembly is left that cannot be avoided (since C-lite no Intel DLL is
 used at all). `WarningsNotAsErrors` for NU1901 to NU1904 stays so that a future advisory is a visible warning, not a failed build.
 When the WCF packages are updated, drop the pins if the new version already depends on a patched version.

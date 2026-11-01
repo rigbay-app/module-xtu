@@ -1,10 +1,12 @@
 # C-lite: build the XTU module without Intel's DLLs (plan C3, implemented in task C4)
 
-> **Status: implemented (task C4, 2026-11-01).** `modules/xtu/Rigbay.Module.Xtu/Intel/Contracts.cs` holds the module's own contract copies; the csproj has
+> These notes were written in the [Rigbay repository](https://github.com/rigbay-app/rigbay) while the module lived in its `modules/xtu/` folder, and were copied here unchanged apart from paths: `modules/xtu/...` is now the root of this repository, `docs/xtu/...` is this `docs/` folder. Sections keep the date they were written; the README at the root says what is current. Host-only things they mention (`Rigbay.sln`, `docs/spike/`, `docs/UI-DIRECTION.md`, `src/Rigbay.LangCheck`, the agent skill) stay in the Rigbay repository.
+
+> **Status: implemented (task C4, 2026-11-01).** `Rigbay.Module.Xtu/Intel/Contracts.cs` holds the module's own contract copies; the csproj has
 > no Intel reference and `module.json` no `probePaths`. See "Result of C4" at the end; the plan below is kept as it was written, with the deviations noted there.
 
 
-Design C-lite of `docs/spike/XTU-RUNTIME.md`: the module carries its own copies of the few contract types it uses (same names, same
+Design C-lite of `docs/spike/XTU-RUNTIME.md` of the Rigbay repository: the module carries its own copies of the few contract types it uses (same names, same
 namespaces, same member shapes), so it builds on a public CI runner with no Intel file, and still talks to the XTU service over the same
 WCF named pipe. Only names and shapes are listed here (worker rule 2: identifiers are facts, no code bodies are copied).
 
@@ -64,12 +66,12 @@ A mismatch shows up as `ActionNotSupportedException`, a deserialisation error, o
 
 ## Steps and effort
 
-1. Dump the contract metadata of the 7 + 4 operations and 6 types above (attributes, namespaces, element types of the two `out` lists). Script in `modules/xtu/tools/`, no Intel file stored. **1 to 2 h.**
+1. Dump the contract metadata of the 7 + 4 operations and 6 types above (attributes, namespaces, element types of the two `out` lists). Script in `tools/`, no Intel file stored. **1 to 2 h.**
 2. Write `Rigbay.Module.Xtu/Intel/Contracts.cs` with the copies (namespaces `IronCity.Core` / `IronCity.Common` kept, internal visibility, only the members above, plus the data members needed for the wire). **2 to 3 h.**
 3. Remove the two `Reference` items and `XtuDir` from the csproj; `probePaths` in `module.json` can stay for `Probe` (file existence check) or go. Check `ProbeLogic` still tests that the Intel folder exists (it is a hint that XTU is installed, not a load requirement any more). **1 h.**
 4. Public CI job: `dotnet build` + `dotnet test` of the extracted repo on a hosted Windows runner (NuGet `Rigbay.Abstractions` instead of the ProjectReference). **1 to 2 h** (depends on how P1's extraction script and the registry pipeline end up).
 5. Read-only live check on the real machine (`tools/live-read.ps1`, write latch ON): status and list must equal today's output (`PL1=55 PL2=60 pl2enable=True window=56`, profile `PL55-60W`), monitor values must flow. Run the monitoring pipe for 30 s. **1 h** plus an owner who is present, because it runs elevated.
-6. Live apply (not part of C-lite): one approved apply after the copy is in place, because `ProposeChange` and `ApplyChanges` carry the most complex data contracts and a read-only check does not exercise them. The module's apply test in `docs/xtu/README.md` ("The live apply test to ask the owner for") is the one to run; needs the owner's approval for the specific write.
+6. Live apply (not part of C-lite): one approved apply after the copy is in place, because `ProposeChange` and `ApplyChanges` carry the most complex data contracts and a read-only check does not exercise them. The module's apply test in `docs/README.md` ("The live apply test to ask the owner for") is the one to run; needs the owner's approval for the specific write.
 
 **Estimate: about 1 working day** for steps 1 to 5 (the spike put "contracts" at about a day on top of design A), plus the owner's approval and time for step 6.
 
@@ -86,7 +88,7 @@ A mismatch shows up as `ActionNotSupportedException`, a deserialisation error, o
 
 What was done, against the steps above:
 
-1. **Metadata** read by `modules/xtu/tools/dump-contracts.ps1` (reflection only, no Intel code runs). Findings that the plan could not know:
+1. **Metadata** read by `tools/dump-contracts.ps1` (reflection only, no Intel code runs). Findings that the plan could not know:
    Intel's interfaces use plain `[ServiceContract]` and `[OperationContract]` with no named arguments (name = interface name, namespace
    `http://tempuri.org/`, session allowed, no callback); **none of the data types has `[DataContract]`**: the structs `XtuTuningControl`, `XtuTuningProposal`
    and `SdkClientToken` are serialised by their public properties or fields (alphabetical), `TuningResult` is `[Serializable]` and goes by fields, and the enum
@@ -96,18 +98,18 @@ What was done, against the steps above:
 3. **csproj and manifest**: both `Reference` items, `XtuDir` and `probePaths` removed. `ProbeLogic` no longer looks for DLLs: it checks the vendor, the service
    `XTU3SERVICE` (installed, running) and that both pipes accept a connection (`PipeCheck`, no operation called; "unknown" when not elevated is not a refusal).
    The XTU version on the page comes from the service's own image path, so no path into Intel's folder is built any more.
-4. **Public CI**: the module builds and tests with `dotnet build` and `dotnet test` of `Rigbay.Xtu.slnx` alone, and it is part of `Rigbay.sln`. The extracted
-   `module-xtu` repository gets its workflow from `tools/extract-module.ps1`; the run on a GitHub-hosted runner itself was not made.
+4. **Public CI**: the module builds and tests with `dotnet build` and `dotnet test` of `Rigbay.Xtu.slnx` alone, and it was also part of the Rigbay repository's `Rigbay.sln`. The extracted
+   `module-xtu` repository got its workflow from the Rigbay repository's `tools/extract-module.ps1` (at the time of this note the run on a GitHub-hosted runner had not been made; see the repository's Actions tab for it now).
 5. **Read-only live check** (`tools/live-read.ps1`, latch ON, through the real host loader): `PL1=55 PL2=60 pl2enable=True window=56`, `PL55-60W`, equal to
-   `xtu-switcher --status`; the monitoring readings flow (page shot). Evidence in `docs/xtu/shots/clite-*`.
-6. **Live apply**: not done (needs the owner's approval for the specific write; test in `docs/xtu/README.md`).
+   `xtu-switcher --status`; the monitoring readings flow (page shot). Evidence in `docs/shots/clite-*`.
+6. **Live apply**: not done (needs the owner's approval for the specific write; test in `docs/README.md`).
 
 Added beyond the plan: the wire-compatibility tests (`WireContractTests`, 20) against a read-only recording of the real service (`wire/`, made by
 `tools/record-wire.ps1`), because the plan's own risk is that a wrong copy shows only against the real service. The recording covers the read-only calls with
 real replies; the write-path types are covered only by Intel's own serializer output and by a request composed from it, never by a real reply.
 
 Proof of "builds with no Intel file" (a clean `git clone` of the commit into a scratch folder on the machine that has XTU, not renamed or hidden):
-`git grep -i "Intel(R)" -- modules/xtu` finds nothing; no `.csproj`, `.props`, `.slnx` or `module.json` has a reference, `XtuDir` or `probePaths` (the
-only "Intel" left there is a comment and the description text and the data-file path that the module reads at run time); `dotnet build modules/xtu/Rigbay.Xtu.slnx -c Release -v:diag`
+`git grep -i "Intel(R)"` finds nothing; no `.csproj`, `.props`, `.slnx` or `module.json` has a reference, `XtuDir` or `probePaths` (the
+only "Intel" left there is a comment and the description text and the data-file path that the module reads at run time); `dotnet build Rigbay.Xtu.slnx -c Release -v:diag`
 mentions neither `Intel(R)` nor `XtuInterface`, `XtuCommon` or `XtuDir` anywhere in its log (0 matches) and ends with 0 warnings and 0 errors; `dotnet test`
 there passes 190 of 190; no Intel file is in any build output.

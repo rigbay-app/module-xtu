@@ -1,10 +1,12 @@
 # Notes for the future recorder module (XTU columns and meta of the old recorder)
 
+> These notes were written in the [Rigbay repository](https://github.com/rigbay-app/rigbay) while the module lived in its `modules/xtu/` folder, and were copied here unchanged apart from paths: `modules/xtu/...` is now the root of this repository, `docs/xtu/...` is this `docs/` folder. Sections keep the date they were written; the README at the root says what is current. Host-only things they mention (`Rigbay.sln`, `docs/spike/`, `docs/UI-DIRECTION.md`, `src/Rigbay.LangCheck`, the agent skill) stay in the Rigbay repository.
+
 The XTU module does **not** record. It publishes readings on the metrics bus with source `xtu` (the host stamps it). A separate
 recorder module reads the bus and writes the CSV. This file is what that recorder needs to know to reproduce the CSV of the standalone
 app (`xtu-profile-switcher`, `Monitor.cs`: `LogColumns`, `Recorder`) for an XTU machine, and where the bus is not enough yet.
 
-Facts below come from the old app's source and from the bus ids in `modules/xtu/Rigbay.Module.Xtu/Monitoring.cs`.
+Facts below come from the old app's source and from the bus ids in `Rigbay.Module.Xtu/Monitoring.cs`.
 
 ## What the old CSV looked like
 
