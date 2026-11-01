@@ -1,0 +1,10 @@
+# build output
+bin/
+obj/
+TestResults/
+*.nupkg
+# editors and local files
+.vs/
+.vscode/
+*.user
+*.log
