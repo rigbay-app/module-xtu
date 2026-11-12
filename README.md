@@ -22,9 +22,10 @@ its tests run on any Windows machine, including GitHub's hosted runners. To use 
 
 ## What is verified, and what is not
 
-Verified (on one machine, 2026-11-01):
+Verified (on one machine; the reading check on 2026-11-01 with 0.1.0, the build and tests again for 0.1.1 on 2026-11-13):
 
-- **Build and unit tests:** 0 warnings, 0 errors; 190 tests pass with no hardware and no Intel software (fakes stand in for the XTU service and for Rigbay).
+- **Build and unit tests:** 0 warnings, 0 errors; 214 tests pass (0.1.1, from a fresh clone with the submodule) with no hardware and no Intel software (fakes stand in for the XTU service and for Rigbay).
+  The redesigned page of 0.1.1 (profile as the main control, tiles, chart) is covered by page tests with those fakes; it was not run against the real XTU service for this release.
   Twenty of them compare the module's contract copies with a recording of the real service's wire format (`Rigbay.Module.Xtu.Tests/wire/`, made once, read-only).
 - **Reading against the real service:** loaded by the real Rigbay app, the module read the same limits and profile list as the old app (`rigbay xtu status`
   and `xtu-switcher --status` printed identical text), and the page and dashboard showed live readings matching the old app's recording
