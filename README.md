@@ -1,7 +1,8 @@
 # XTU profiles module for Rigbay
 
 Switch Intel XTU power-limit profiles (PL1, PL2, time window) from [Rigbay](https://github.com/rigbay-app/rigbay), and read CPU
-temperature and power. Version 0.1.0, early development: not released, no package published.
+temperature and power. Version 0.1.1 (pre-release), see [CHANGELOG.md](CHANGELOG.md). **Needs Rigbay 0.1.2 or newer** (host API 0.1.3): Rigbay 0.1.0
+and 0.1.1 do not check that and would offer it, so update Rigbay first.
 
 What it does, inside the Rigbay app:
 
