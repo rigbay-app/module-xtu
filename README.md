@@ -1,8 +1,9 @@
 # XTU profiles module for Rigbay
 
 Switch Intel XTU power-limit profiles (PL1, PL2, time window) from [Rigbay](https://github.com/rigbay-app/rigbay), and read CPU
-temperature and power. Version 0.1.1 (pre-release), see [CHANGELOG.md](CHANGELOG.md). **Needs Rigbay 0.1.2 or newer** (host API 0.1.3): Rigbay 0.1.0
-and 0.1.1 do not check that and would offer it, so update Rigbay first.
+temperature and power. Version 0.1.2 (pre-release), see [CHANGELOG.md](CHANGELOG.md). **Needs Rigbay 0.1.5 or newer** (host API 0.1.4): Rigbay 0.1.0 and 0.1.1 do not check that and would offer it, and 0.1.2 and 0.1.3 refuse it, so update Rigbay first.
+
+**For other modules (host API 0.1.4).** `rigbay xtu status` and `list` are declared read-only. `rigbay xtu apply <profile>` is declared as a write of the CPU power limits (hardware); its preview is the profile's own values ("Gaming: PL1 45 W · PL2 65 W · 28 s", from the profile list, never from what is in force now), and a run that changed something reports the profile that was in force before, so the host can put it back with `apply <that profile>`. When the old values matched no profile there is nothing to report and that step is not undone. The monitor (temperature, power, clock, usage) is also read when another module such as Watch asks for it in the background, at the asked interval but never faster than once a second; with nobody asking it is still not read at all. None of this was run with a real plan or another module: the tests use fakes.
 
 What it does, inside the Rigbay app:
 
@@ -22,9 +23,9 @@ its tests run on any Windows machine, including GitHub's hosted runners. To use 
 
 ## What is verified, and what is not
 
-Verified (on one machine; the reading check on 2026-11-01 with 0.1.0, the build and tests again for 0.1.1 on 2026-11-13):
+Verified (on one machine; the reading check on 2026-11-01 with 0.1.0, the build and tests again for 0.1.1 and 0.1.2 on 2026-11-13):
 
-- **Build and unit tests:** 0 warnings, 0 errors; 214 tests pass (0.1.1, from a fresh clone with the submodule) with no hardware and no Intel software (fakes stand in for the XTU service and for Rigbay).
+- **Build and unit tests:** 0 warnings, 0 errors; 236 tests pass (0.1.2, from a fresh clone with the submodule) with no hardware and no Intel software (fakes stand in for the XTU service and for Rigbay).
   The redesigned page of 0.1.1 (profile as the main control, tiles, chart) is covered by page tests with those fakes; it was not run against the real XTU service for this release.
   Twenty of them compare the module's contract copies with a recording of the real service's wire format (`Rigbay.Module.Xtu.Tests/wire/`, made once, read-only).
 - **Reading against the real service:** loaded by the real Rigbay app, the module read the same limits and profile list as the old app (`rigbay xtu status`
